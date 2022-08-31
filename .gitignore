@@ -1,2 +1,4 @@
 *.out
 /.vscode
+/build
+/third_party

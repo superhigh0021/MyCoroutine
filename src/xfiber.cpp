@@ -245,6 +245,10 @@ Fiber::~Fiber() {
     stack_size_ = 0;
 }
 
+uint64_t Fiber::Seq() {
+    return seq_;
+}
+
 void Fiber::Start(Fiber* fiber) {
     fiber->run_();
     fiber->status_ = FiberStatus::FINISHED;
