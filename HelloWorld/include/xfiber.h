@@ -12,6 +12,7 @@
 #include <ucontext.h>
 #include <vector>
 
+
 enum class FiberStatus {
     INIT = 0,
     READYING = 1,
@@ -68,7 +69,7 @@ public:
 
     XFiberCtx* SchedCtx();
 
-    static XFiber* xiber() {
+    static XFiber* getInst() {
         static thread_local XFiber xf;
         return &xf;
     }

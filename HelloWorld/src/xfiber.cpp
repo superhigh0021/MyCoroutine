@@ -159,6 +159,7 @@ void XFiber::SleepMs(int ms) {
     SwitchToSched();
 }
 
+//将文件描述符注册入 epoll
 void XFiber::TakeOver(int fd) {
     epoll_event ev;
     ev.events = EPOLLIN | EPOLLOUT | EPOLLET;
