@@ -75,13 +75,26 @@ void XFiber::WakeupFiber(Fiber* fiber) {
 void XFiber::Dispatch() {
     while (true) {
         if (!ready_fibers_.empty()) {
-            running_fibers_ = std::move(ready_fibers_);
+            // 感觉直接赋值会有问题，如果 running 队列中有正在运行的队伍，直接就没了
+            // running_fibers_ = std::move(ready_fibers_);
+
+            //所以改为追加
+            for (auto fiber : ready_fibers_) {
+                running_fibers_.emplace_back(fiber);
+            }
             ready_fibers_.clear();
-            LOGD("there are %ld fiber(s) in ready list, ready to run...", running_fibers_.size());
+
+            int64_t running_fibers_sz = running_fibers_.size();
+            if (running_fibers_sz == 1) {
+                LOGD("there are %ld fiber in ready list, ready to run...", running_fibers_sz);
+            } else {
+                LOGD("there are %ld fibers in ready list, ready to run...", running_fibers_sz);
+            }
 
             for (auto fiber : running_fibers_) {
                 cur_fiber_ = fiber;
                 LOGD("switch from sched to fiber[%lu]", fiber->Seq());
+                // 调度任务，在此处触发 makecontext 中注册的函数，任务进行
                 assert(SwitchCtx(SchedCtx(), fiber->Ctx()) == 0);
                 cur_fiber_ = nullptr;
 
@@ -144,7 +157,7 @@ void XFiber::Yiled() {
 void XFiber::SwitchToSched() {
     assert(cur_fiber_ != nullptr);
     LOGD("switch to sched");
-    assert(SwitchCtx(cur_fiber_->Ctx(), SchedCtx()));
+    assert(SwitchCtx(cur_fiber_->Ctx(), SchedCtx()) == 0);
 }
 
 void XFiber::SleepMs(int ms) {

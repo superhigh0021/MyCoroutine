@@ -3,17 +3,17 @@
 #include <cstdio>
 #include <string>
 
-#define DEBUG_ENABLE 1
-#define INFO_ENABLE 1
-#define WARNING_ENABLE 1
-#define ERROR_ENABLE 1
+#define DEBUG_ENABLE (1 << 0)
+#define INFO_ENABLE (1 << 1)
+#define WARNING_ENABLE (1 << 2)
+#define ERROR_ENABLE (1 << 3)
 
 static std::string log_date() {
     time_t now = time(0);
-    struct tm tstruct;
+    tm tstruct;
     char buf[80];
     tstruct = *localtime(&now);
-    strftime(buf, sizeof(buf), "%Y-%m%d.%X", &tstruct);
+    strftime(buf, sizeof(buf), "%Y-%m-%d %X", &tstruct);
     return buf;
 }
 

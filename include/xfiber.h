@@ -12,7 +12,6 @@
 #include <ucontext.h>
 #include <vector>
 
-
 enum class FiberStatus {
     INIT = 0,
     READYING = 1,
@@ -22,7 +21,7 @@ enum class FiberStatus {
 
 using XFiberCtx = ucontext_t;
 
-#define SwitchCtx(from, to) \
+#define  SwitchCtx(from, to) \
     swapcontext(from, to)
 
 struct WaitingEvents {
@@ -34,7 +33,7 @@ struct WaitingEvents {
         waiting_fds_w.clear();
     }
 
-    //一个协程中监听的 fd 不会太多，直接用数组
+    // 一个协程中监听的 fd 不会太多，直接用数组
     std::vector<int> waiting_fds_r;
     std::vector<int> waiting_fds_w;
     int64_t expire_at_;
@@ -42,6 +41,7 @@ struct WaitingEvents {
 
 class Fiber;
 
+// 调度器
 class XFiber {
 public:
     XFiber();
@@ -52,7 +52,7 @@ public:
 
     void CreateFiber(std::function<void()> run, size_t stack_size = 0, std::string fiber_name = "");
 
-    //调度器
+    // 调度函数
     void Dispatch();
 
     void Yiled();
@@ -69,6 +69,8 @@ public:
 
     XFiberCtx* SchedCtx();
 
+    /* 在每个线程启动时分配空间、创建一个对象，在该函数首次调用后才初始化 */
+    /* 此条注释由ee commit */
     static XFiber* getInst() {
         static thread_local XFiber xf;
         return &xf;
@@ -149,9 +151,9 @@ private:
 
     std::function<void()> run_;
 
-    uint8_t* stack_ptr_;
-
     size_t stack_size_;
+
+    uint8_t* stack_ptr_;
 
     WaitingEvents waiting_events_;
 };

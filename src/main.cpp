@@ -20,7 +20,7 @@ auto main() -> int {
     XFiber* xfiber = XFiber::getInst();
 
     xfiber->CreateFiber([&] {
-        Listener listener = Listener::ListenTCP(7000);
+        Listener listener = Listener::ListenTCP(8888);
         while (true) {
             std::shared_ptr<Connection> conn1 = listener.Accept();
             // shared_ptr<Connection> conn2 = Connection::ConnectTCP("127.0.0.1", 6379);
@@ -32,23 +32,26 @@ auto main() -> int {
                     if (n <= 0) {
                         break;
                     }
-
 #if 0
-                    conn2->Write(recv_buf, n);
-                    char rsp[1024];
-                    int rsp_len = conn2->Read(rsp, 1024);
-                    cout << "recv from remote: " << rsp << endl;
-                    conn1->Write(rsp, rsp_len);
+                        conn2->Write(recv_buf, n);
+                        char rsp[1024];
+                        int rsp_len = conn2->Read(rsp, 1024);
+                        cout << "recv from remote: " << rsp << endl;
+                        conn1->Write(rsp, rsp_len);
 #else
-                    if (conn1->Write("+OK\r\n", 5, 1000) <= 0) {
-                        break;
-                    }
+                        if (conn1->Write("+OK\r\n", 5, 1000) <= 0) {
+                            break;
+                        }
 #endif
                 }
             },
                                 0, "server");
         }
     });
+
+    // xfiber->CreateFiber([]() {
+    //     std::cout << "Hello World" << std::endl;
+    // });
 
     xfiber->Dispatch();
 

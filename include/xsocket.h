@@ -46,7 +46,7 @@ public:
 
     std::shared_ptr<Connection> Accept();
 
-    void FromRawFd(int fd);
+    void setFd(int fd);
 
     static Listener ListenTCP(uint16_t port);
 

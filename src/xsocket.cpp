@@ -1,5 +1,6 @@
 #include "xsocket.h"
 #include "xfiber.h"
+#include <iostream>
 
 uint32_t Fd::next_seq_ = 0;
 
@@ -39,7 +40,7 @@ Listener Listener::ListenTCP(uint16_t port) {
         exit(-1);
     }
 
-    if (fcntl(fd, F_SETFL, O_NONBLOCK) < 0) {
+    if (fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_NONBLOCK) < 0) {
         LOGE("set set listen fd O_NONBLOCK failed, msg=%s", strerror(errno));
         exit(-1);
     }
@@ -55,7 +56,7 @@ Listener Listener::ListenTCP(uint16_t port) {
     }
 
     Listener listener;
-    listener.FromRawFd(fd);
+    listener.setFd(fd);
 
     LOGI("listen %d success...", port);
     XFiber::getInst()->TakeOver(fd);
@@ -63,7 +64,7 @@ Listener Listener::ListenTCP(uint16_t port) {
     return listener;
 }
 
-void Listener::FromRawFd(int fd) {
+void Listener::setFd(int fd) {
     fd_ = fd;
 }
 
@@ -73,7 +74,7 @@ std::shared_ptr<Connection> Listener::Accept() {
     while (true) {
         int client_fd = accept(fd_, nullptr, nullptr);
         if (client_fd > 0) {
-            if (fcntl(client_fd, F_SETFL, O_NONBLOCK) != 0) {
+            if (fcntl(client_fd, F_SETFL, fcntl(client_fd, F_GETFL) | O_NONBLOCK) != 0) {
                 perror("fcntl error!");
                 exit(-1);
             }
@@ -88,8 +89,8 @@ std::shared_ptr<Connection> Listener::Accept() {
             xfiber->TakeOver(client_fd);
             return std::shared_ptr<Connection>(new Connection(client_fd));
         } else {
+            //! accept 失败，协程切出
             if (errno == EAGAIN) {
-                //! accept 失败，协程切出
                 WaitingEvents events;
                 events.waiting_fds_r.push_back(fd_);
                 xfiber->RegisterWaitingEvents(events);

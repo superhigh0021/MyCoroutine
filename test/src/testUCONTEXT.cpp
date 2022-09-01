@@ -26,8 +26,18 @@ void context_test() {
     puts("main");
 }
 
+class A {
+public:
+    A() : p(new int(0)) {}
+
+private:
+    int* p;
+};
+
 auto main(int argc, char* argv[]) -> int {
-    context_test();
+    // context_test();
+
+    A a{};
 
     return 0;
 }
